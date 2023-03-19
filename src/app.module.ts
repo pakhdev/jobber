@@ -6,6 +6,9 @@ import { JoiValidationSchema } from '@/config/joi.validation';
 import { envConfiguration } from './config/env.config';
 import { JobsModule } from './jobs/jobs.module';
 import { CompaniesModule } from './companies/companies.module';
+import { IndeedModule } from './job-scrapers/indeed/indeed.module';
+import { HttpParserModule } from './parsers/http-parser/http-parser.module';
+import { PuppeteerParserModule } from './parsers/puppeteer-parser/puppeteer-parser.module';
 
 @Module({
     imports: [
@@ -26,6 +29,9 @@ import { CompaniesModule } from './companies/companies.module';
         AuthModule,
         JobsModule,
         CompaniesModule,
+        IndeedModule,
+        HttpParserModule,
+        PuppeteerParserModule,
     ],
 })
 export class AppModule {
