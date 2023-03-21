@@ -10,6 +10,7 @@ import { IndeedModule } from './job-scrapers/indeed/indeed.module';
 import { HttpParserModule } from './parsers/http-parser/http-parser.module';
 import { PuppeteerParserModule } from './parsers/puppeteer-parser/puppeteer-parser.module';
 import { TelegramModule } from './telegram/telegram.module';
+import { KeywordsModule } from './keywords/keywords.module';
 
 @Module({
     imports: [
@@ -34,6 +35,7 @@ import { TelegramModule } from './telegram/telegram.module';
         HttpParserModule,
         PuppeteerParserModule,
         TelegramModule,
+        KeywordsModule,
     ],
 })
 export class AppModule {
