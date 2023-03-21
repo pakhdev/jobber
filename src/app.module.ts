@@ -9,6 +9,7 @@ import { CompaniesModule } from './companies/companies.module';
 import { IndeedModule } from './job-scrapers/indeed/indeed.module';
 import { HttpParserModule } from './parsers/http-parser/http-parser.module';
 import { PuppeteerParserModule } from './parsers/puppeteer-parser/puppeteer-parser.module';
+import { TelegramModule } from './telegram/telegram.module';
 
 @Module({
     imports: [
@@ -32,6 +33,7 @@ import { PuppeteerParserModule } from './parsers/puppeteer-parser/puppeteer-pars
         IndeedModule,
         HttpParserModule,
         PuppeteerParserModule,
+        TelegramModule,
     ],
 })
 export class AppModule {

@@ -6,8 +6,13 @@ export class IndeedController {
     constructor(private readonly indeedService: IndeedService) {
     }
 
+    // @Get()
+    // findAll(@Query('word') word: string) {
+    //     return this.indeedService.getJobDetails(word);
+    // }
+
     @Get()
-    findAll(@Query('word') word: string) {
-        return this.indeedService.findAll(word);
+    findAll() {
+        return this.indeedService.getJobDetails();
     }
 }

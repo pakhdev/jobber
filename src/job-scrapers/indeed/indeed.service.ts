@@ -4,10 +4,12 @@ import { PuppeteerParserService } from '@/parsers/puppeteer-parser/puppeteer-par
 
 @Injectable()
 export class IndeedService {
-    constructor(private puppeteerService: PuppeteerParserService) {
+    constructor(
+        private readonly puppeteerService: PuppeteerParserService,
+    ) {
     }
 
-    async findAll(query: string) {
+    async findJobs(query: string) {
         const jobsPerPage = 20;
 
         try {
@@ -38,6 +40,14 @@ export class IndeedService {
             console.error('Error:', error);
             throw error;
         }
+    }
+
+    async getJobDetails() {
+        const url = 'https://es.indeed.com/viewjob?viewtype=embedded&jk=077e0e2863a1877e&tk=1grt8v4bq2fe7000';
+        return await this.puppeteerService.performTask(async (page) => {
+            await page.goto(url);
+            return this.cleanHTML(await page.$eval('#jobDescriptionText', (div) => div.innerHTML));
+        });
     }
 
     async extractTotal(page) {
@@ -74,6 +84,16 @@ export class IndeedService {
             published_at,
             extractedSalary,
         };
+    }
+
+    cleanHTML(html) {
+        return html
+            .replace(/<br\s*[\/]?>/gi, '\n')
+            .replace(/<li>/gi, '\n- ')
+            .replace(/<[^>]+>/g, '')
+            .split('\n')
+            .filter((line) => line.trim() !== '')
+            .join('\n');
     }
 
 }

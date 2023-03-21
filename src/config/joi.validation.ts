@@ -12,4 +12,8 @@ export const JoiValidationSchema = Joi.object({
     POSTGRES_DB_USER: Joi.string().required(),
     POSTGRES_DB_PASSWORD: Joi.string().required(),
     POSTGRES_TIMEZONE: Joi.string().default('Europe/Madrid'),
+
+    TELEGRAM_BOT_TOKEN: Joi.string().required(),
+    TELEGRAM_IMPORTANT_JOBS: Joi.string().required(),
+    TELEGRAM_NORMAL_JOBS: Joi.string().required(),
 });
