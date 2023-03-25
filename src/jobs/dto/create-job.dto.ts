@@ -4,4 +4,7 @@ export class CreateJobDto {
     url: string;
     location: string;
     published_at: Date;
+    description?: string;
+    points?: number;
+    salary?: string;
 }

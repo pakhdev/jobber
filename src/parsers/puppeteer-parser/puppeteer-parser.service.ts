@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { from, Subject } from 'rxjs';
+import { delay, from, Subject } from 'rxjs';
 import { concatMap, tap } from 'rxjs/operators';
 
 const puppeteer = require('puppeteer-extra');
@@ -25,6 +25,7 @@ export class PuppeteerParserService implements OnModuleInit, OnModuleDestroy {
             .pipe(
                 concatMap((taskData) => {
                     return from(taskData.task(page)).pipe(
+                        delay(3000),
                         tap({
                             next: (result) => {
                                 taskData.resolve(result);

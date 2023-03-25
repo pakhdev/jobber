@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { Job } from '@/jobs/entities/job.entity';
 
 @Injectable()
@@ -19,12 +19,16 @@ export class JobsService {
         return await this.jobRepository.find();
     }
 
+    async findNotParsed(): Promise<Job[]> {
+        return await this.jobRepository.find({ where: { description: IsNull() } });
+    }
+
     async countByRemoteId(id: string): Promise<number> {
         return await this.jobRepository.count({ where: { remoteId: id } });
     }
 
     update(id: number, updateJobDto: UpdateJobDto) {
-        return `This action updates a #${ id } job`;
+        const job = this.jobRepository.update(id, updateJobDto);
     }
 
     remove(id: number) {

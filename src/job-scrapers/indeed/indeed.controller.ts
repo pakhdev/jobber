@@ -7,12 +7,12 @@ export class IndeedController {
     }
 
     @Get()
-    findAll(@Query('word') word: string) {
+    findJobs(@Query('word') word: string) {
         return this.indeedService.findJobs(word);
     }
 
-    // @Get()
-    // findAll() {
-    //     return this.indeedService.getJobDetails();
-    // }
+    @Get('details')
+    findJobDetails() {
+        return this.indeedService.findJobDetails();
+    }
 }

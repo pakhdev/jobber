@@ -40,4 +40,5 @@ export class Job {
 
     @Column({ nullable: true })
     cv_date: Date;
+
 }

@@ -3,12 +3,14 @@ import { IndeedJobsList } from '@/job-scrapers/indeed/interfaces/indeed-jobs-lis
 import { PuppeteerParserService } from '@/parsers/puppeteer-parser/puppeteer-parser.service';
 import { CreateJobDto } from '@/jobs/dto/create-job.dto';
 import { JobsService } from '@/jobs/jobs.service';
+import { KeywordsService } from '@/keywords/keywords.service';
 
 @Injectable()
 export class IndeedService {
     constructor(
         private readonly puppeteerService: PuppeteerParserService,
         private readonly jobsService: JobsService,
+        private readonly keywordsService: KeywordsService,
     ) {
     }
 
@@ -37,10 +39,7 @@ export class IndeedService {
 
                 for (const job of jobsList) {
                     const jobExists = await this.jobsService.countByRemoteId(job.remoteId);
-                    if (jobExists > 0) {
-                        console.log('Job already exists, skipping...');
-                        break pagesLoop;
-                    }
+                    if (jobExists > 0) break pagesLoop;
                     await this.jobsService.create(job);
                 }
 
@@ -54,8 +53,20 @@ export class IndeedService {
         }
     }
 
-    async getJobDetails() {
-        const url = 'https://es.indeed.com/viewjob?viewtype=embedded&jk=077e0e2863a1877e&tk=1grt8v4bq2fe7000';
+    async findJobDetails() {
+        const jobs = await this.jobsService.findNotParsed();
+        for (const job of jobs) {
+            const description = await this.getJobDetails(job.url);
+            const points = await this.keywordsService.calculatePoints(description);
+            await this.jobsService.update(job.id, {
+                description,
+                points,
+            });
+        }
+    }
+
+    async getJobDetails(indeedParams: string): Promise<string> {
+        const url = 'https://es.indeed.com' + indeedParams;
         return await this.puppeteerService.performTask(async (page) => {
             await page.goto(url);
             return this.cleanHTML(await page.$eval('#jobDescriptionText', (div) => div.innerHTML));
@@ -84,31 +95,31 @@ export class IndeedService {
         const {
             displayTitle: title,
             jobLocationCity: location,
-            viewJobLink: url,
             pubDate: published_at,
             // company,
-            // extractedSalary,
+            extractedSalary,
             jobkey: remoteId,
         } = job;
         return {
             remoteId,
             title,
             location,
-            url,
+            url: `/viewjob?viewtype=embedded&jk=${ remoteId }`,
             published_at: new Date(published_at),
             // company,
-            // extractedSalary,
+            salary: extractedSalary ? `${ extractedSalary.min } - ${ extractedSalary.max }` : null,
         };
     }
 
-    cleanHTML(html) {
+    cleanHTML(html: string): string {
         return html
             .replace(/<br\s*[\/]?>/gi, '\n')
             .replace(/<li>/gi, '\n- ')
             .replace(/<[^>]+>/g, '')
             .split('\n')
             .filter((line) => line.trim() !== '')
-            .join('\n');
+            .join('\n')
+            .trim();
     }
 
 }
