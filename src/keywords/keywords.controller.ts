@@ -27,4 +27,9 @@ export class KeywordsController {
     remove(@Param('id', ParseIntPipe) id: string) {
         return this.keywordsService.remove(+id);
     }
+
+    @Post('calculate-points')
+    calculatePoints(@Body('text') text: string) {
+        return this.keywordsService.calculatePoints(text);
+    }
 }

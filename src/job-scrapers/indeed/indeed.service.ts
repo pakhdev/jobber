@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { IndeedJobsList } from '@/job-scrapers/indeed/interfaces/indeed-jobs-list.interface';
 import { PuppeteerParserService } from '@/parsers/puppeteer-parser/puppeteer-parser.service';
+import { CreateJobDto } from '@/jobs/dto/create-job.dto';
+import { JobsService } from '@/jobs/jobs.service';
 
 @Injectable()
 export class IndeedService {
     constructor(
         private readonly puppeteerService: PuppeteerParserService,
+        private readonly jobsService: JobsService,
     ) {
     }
 
@@ -23,14 +26,23 @@ export class IndeedService {
             const totalPages = Math.ceil(totalResults / jobsPerPage);
 
             let allJobs = [];
-            for (let i = 0; i <= totalPages; i++) {
+            pagesLoop: for (let i = 0; i <= totalPages; i++) {
                 const offset = i * jobsPerPage;
-                const currentPageUrl = `https://es.indeed.com/jobs?q=${ encodedQuery }&l=&fromage=14&start=${ offset / 2 }`;
+                const currentPageUrl = `https://es.indeed.com/jobs?q=${ encodedQuery }&sort=date&l=&fromage=14&start=${ offset / 2 }`;
 
                 const jobsList = await this.puppeteerService.performTask(async (page) => {
                     await page.goto(currentPageUrl);
                     return this.extractJobs(page);
                 });
+
+                for (const job of jobsList) {
+                    const jobExists = await this.jobsService.countByRemoteId(job.remoteId);
+                    if (jobExists > 0) {
+                        console.log('Job already exists, skipping...');
+                        break pagesLoop;
+                    }
+                    await this.jobsService.create(job);
+                }
 
                 allJobs = allJobs.concat(jobsList);
             }
@@ -56,33 +68,36 @@ export class IndeedService {
         });
     }
 
-    async extractJobs(page) {
-        const jobsList = [];
+    async extractJobs(page): Promise<CreateJobDto[]> {
+        const jobsList: CreateJobDto[] = [];
         const jobCards: IndeedJobsList[] = await page.evaluate(() => {
             return (window as any).mosaic.providerData['mosaic-provider-jobcards'].metaData.mosaicProviderJobCardsModel.results;
         });
+        // console.log(jobCards[0]);
         for (const job of jobCards) {
             jobsList.push(this.parseJobShort(job));
         }
         return jobsList;
     }
 
-    parseJobShort(job: IndeedJobsList) {
+    parseJobShort(job: IndeedJobsList): CreateJobDto {
         const {
-            company,
             displayTitle: title,
-            jobLocationCity: city,
-            viewJobLink,
+            jobLocationCity: location,
+            viewJobLink: url,
             pubDate: published_at,
-            extractedSalary,
+            // company,
+            // extractedSalary,
+            jobkey: remoteId,
         } = job;
         return {
-            company,
+            remoteId,
             title,
-            city,
-            viewJobLink,
-            published_at,
-            extractedSalary,
+            location,
+            url,
+            published_at: new Date(published_at),
+            // company,
+            // extractedSalary,
         };
     }
 

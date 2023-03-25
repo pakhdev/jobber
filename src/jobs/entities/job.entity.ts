@@ -8,14 +8,20 @@ export class Job {
     @PrimaryGeneratedColumn('increment')
     id: number;
 
+    @Column('varchar', { length: 20, nullable: false })
+    remoteId: string;
+
     @Column('varchar', { length: 255, nullable: false })
     title: string;
 
-    @Column('text')
+    @Column('text', { nullable: true })
     description: string;
 
-    @Column('varchar', { length: 100 })
+    @Column('varchar', { length: 100, nullable: true })
     salary: string;
+
+    @Column('varchar', { length: 100, nullable: true })
+    location: string;
 
     @Column({ default: () => 'NOW()' })
     published_at: Date;
@@ -23,10 +29,10 @@ export class Job {
     @Column('varchar', { length: 255, nullable: false })
     url: string;
 
-    @Column()
+    @Column({ nullable: true })
     points: number;
 
-    @Column({ type: 'enum', enum: Importance })
+    @Column({ type: 'enum', enum: Importance, nullable: true })
     importance: Importance;
 
     @ManyToOne(() => Company, company => company.jobs)

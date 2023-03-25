@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Job } from '@/jobs/entities/job.entity';
 
 @Injectable()
 export class JobsService {
-  create(createJobDto: CreateJobDto) {
-    return 'This action adds a new job';
-  }
+    constructor(@InjectRepository(Job) private readonly jobRepository: Repository<Job>) {
+    }
 
-  findAll() {
-    return `This action returns all jobs`;
-  }
+    async create(createJobDto: CreateJobDto): Promise<Job> {
+        const job = await this.jobRepository.create(createJobDto);
+        return await this.jobRepository.save(job);
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} job`;
-  }
+    async findAll() {
+        return await this.jobRepository.find();
+    }
 
-  update(id: number, updateJobDto: UpdateJobDto) {
-    return `This action updates a #${id} job`;
-  }
+    async countByRemoteId(id: string): Promise<number> {
+        return await this.jobRepository.count({ where: { remoteId: id } });
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} job`;
-  }
+    update(id: number, updateJobDto: UpdateJobDto) {
+        return `This action updates a #${ id } job`;
+    }
+
+    remove(id: number) {
+        return `This action removes a #${ id } job`;
+    }
 }

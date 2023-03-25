@@ -38,4 +38,14 @@ export class KeywordsService {
         const keyword = await this.findOne(id);
         await this.keywordsRepository.remove(keyword);
     }
+
+    async calculatePoints(text: string): Promise<number> {
+        const keywords = await this.findAll();
+        return keywords.reduce((acc, keyword) => {
+            const regex = new RegExp(keyword.word, 'gi');
+            const matches = text.match(regex);
+            if (matches) acc += Number(keyword.points);
+            return acc;
+        }, 0);
+    }
 }
